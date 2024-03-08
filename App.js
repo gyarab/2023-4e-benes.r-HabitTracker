@@ -172,11 +172,12 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.habitName}>{name}</Text>
       <VictoryChart domainPadding={20} animate={{ duration: 750 }}>
         <VictoryAxis
           tickFormat={(x) => (x < dataChart.length ? dataChart[x]["day"] : "")}
         />
-        <VictoryAxis dependentAxis tickFormat={(y) => (`${y} ${data.habity[name].ofWhat}`)} />
+        <VictoryAxis dependentAxis tickFormat={(y) => (`${y} ${data.habity[name].ofWhat}`)} style={{ tickLabels: { fontFamily: "Courier New", fontWeight: "bold" } }} />
         <VictoryBar
           cornerRadius={{ 
             topLeft: 5,
@@ -327,4 +328,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10
   },
+  habitName: {
+    fontSize: 40,
+    fontWeight: "bold",
+    fontFamily: "Courier New",
+    marginBottom: -85
+  }
 });
