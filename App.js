@@ -12,37 +12,31 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useState, useEffect } from "react";
 
 const Stack = createNativeStackNavigator();
-var tasks = [
-  { name: "ondřejssusamogus" },
-  { name: "bainossusamogus" },
-  { name: "hrushkasusamogus" },
-  { name: "egisusamogus" },
-  { name: "fajrususamogus" },
-];
 
 export default function App() {
+  const [tasks, setTasks] = useState([]);
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: "Home" }}
-        />
+        <Stack.Screen name="Home" options={{ title: "Home" }}>
+          {({navigation}) => (<HomeScreen navigation={navigation} tasks={tasks}/>)}
+        </Stack.Screen>
         <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="NewTask" component={NewTaskScreen} />
+        <Stack.Screen name="NewTask">
+          {({navigation}) => (<NewTaskScreen navigation={navigation} tasks={tasks} setTasks={setTasks}/>)}
+        </Stack.Screen>
         <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, tasks }) => {
   return (
     <ScrollView>
       <Text>Home screen</Text>
-      {tasks.map((r) => (
-        <Task name={r.name} navigation={navigation}></Task>
+      {tasks.map((r, i) => (
+        <Task name={r.name} navigation={navigation} key={i}></Task>
       ))}
       <StatusBar style="auto" />
       <Button
@@ -63,20 +57,20 @@ const ProfileScreen = ({ navigation, route }) => {
   );
 };
 
-const NewTaskScreen = ({ navigation, route }) => {
-  const [text, onChangeText] = React.useState("Useless Text");
+const NewTaskScreen = ({ navigation, tasks, setTasks }) => {
+  const [text, setText] = React.useState("Useless Text");
   return (
     <View style={styles.container}>
       <Text>New Task screen</Text>
       <TextInput
         style={styles.input}
-        onChangeText={onChangeText}
+        onChangeText={setText}
         value={text}
       />
       <Button
         title="Save"
         onPress={() => {
-          tasks.push({ name: name });
+          setTasks([...tasks, { name: text }])
           navigation.navigate("Home");
         }}
       />
