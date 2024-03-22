@@ -130,31 +130,31 @@ const NewHabitScreen = ({ navigation, zmena, setZmena }) => {
 };
 
 const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
+  const { name, goalAmount } = route.params;
   let dataChart = [];
-  const { name, goalAmount } = route.params
   for (const [key, value] of Object.entries(data.habity[name].data)) {
-    dataChart.push({day: key, value: value})
+    dataChart.push({ day: key, value: value });
   }
-  console.log(dataChart);
-  let delka = 1
+
   const [inputValue, setInputValue] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleAddData = () => {
-    if (inputValue.trim() === "") return; 
+    if (inputValue.trim() === "") return;
 
     const today = new Date().toISOString().split("T")[0];
 
     data.habity[name].data[today] = (data.habity[name].data[today] || 0) + parseInt(inputValue);
     data.save();
-    
+
     setZmena(!zmena);
 
     setIsModalVisible(false);
   };
 
+  let delka = 1;
   switch (data.habity[name].dayWeekMonth) {
-    case "day": 
+    case "day":
       delka = 7;
       break;
     case "week":
@@ -164,29 +164,29 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
       delka = 12;
       break;
   }
+
   return (
     <View style={styles.container}>
       <VictoryChart domainPadding={20}>
         <VictoryAxis
           tickValues={Array.from({ length: delka }, (_, i) => i)}
-          tickFormat={(x) => (`${x < dataChart.length ? dataChart[x]["day"] : ""}`)}
+          tickFormat={(x) => (x < dataChart.length ? dataChart[x]["day"] : "")}
         />
-        <VictoryAxis
-          dependentAxis
-          tickFormat={(y) => (`${y} ${data.habity[name].ofWhat}`)}
-        />
+        <VictoryAxis dependentAxis tickFormat={(y) => (`${y} ${data.habity[name].ofWhat}`)} />
         <VictoryBar
           data={dataChart}
-          barRatio={0.8}
           style={{
             data: { fill: "#c43a31" }
           }}
           x="day"
           y="value"
         />
+        {/* Adding the VictoryLine for the goal amount */}
         <VictoryLine
-          data={[{ x: 0, y: goalAmount }, { x: delka - 1, y: goalAmount }]}
-          style={{ data: { stroke: "blue", strokeWidth: 2 } }}
+          y={() => goalAmount}
+          style={{
+            data: { stroke: "red", strokeWidth: 2 },
+          }}
         />
       </VictoryChart>
       <Button title="Add Data" onPress={() => setIsModalVisible(true)} />
@@ -214,6 +214,7 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
     </View>
   );
 };
+
 
 const Habit = ({ navigation, name }) => {
   return (
