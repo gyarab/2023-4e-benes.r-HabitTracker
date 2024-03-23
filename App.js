@@ -61,51 +61,57 @@ const ProfileScreen = ({ navigation, route }) => {
 };
 
 const NewHabitScreen = ({ navigation, habits, setHabits }) => {
-  const [text, setText] = React.useState("");
+  const [newHabitName, setNewHabitName] = React.useState("");
   const [inputType, setInputType] = React.useState("");
-  const [nejakToRve, setNejakToRve] = React.useState("");
+  const [inputs, setInputs] = React.useState({
+    amount: "",
+    ofWhat: "",
+    dayWeekMonth: ""
+  });
+
+  const handleChange = (name, value) => {
+    setInputs(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const renderInputComponent = () => {
+    switch (inputType) {
+      case 'amount':
+        return <AmountInput inputs={inputs} handleChange={handleChange} />;
+      case 'yn':
+        return <YesNoInput inputs={inputs} handleChange={handleChange} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Input
         style={styles.input}
-        onChangeText={setText}
-        value={text}
+        onChangeText={setNewHabitName}
+        value={newHabitName}
         placeholder="Your new habit"
       />
       <Select
         placeholder="Choose input type"
         selectedValue={inputType}
         onValueChange={itemValue => setInputType(itemValue)}>
-          <Select.Item label="Amount (hours/kms/...)" value="amount" />
-          <Select.Item label="Yes/No (I have/n't done it)" value="yn" />
+          <Select.Item label="Amount" value="amount" />
+          <Select.Item label="Yes/No" value="yn" />
       </Select>
       <Text>
         Set a goal!
       </Text>
-      <Input
-        style={styles.input}
-        placeholder="amount"
-      />
-      <Input
-        style={styles.input}
-        placeholder="of what (hrs/kms/...)"
-      />
-      <Text>
-        per...
-      </Text>
-      <Select
-        placeholder="Day/Week/Month"
-        selectedValue={nejakToRve}
-        onValueChange={itemValue => setNejakToRve(itemValue)}>
-          <Select.Item label="Day"/>
-          <Select.Item label="Week"/>
-          <Select.Item label="Month"/>
-      </Select>
+
+      {renderInputComponent()}
+
       <Button
         title="Save"
         onPress={() => {
-          setHabits([...habits, { name: text }])
+          setHabits([...habits, { name: newHabitName }]);
           navigation.navigate("Home");
         }}
       />
@@ -113,6 +119,53 @@ const NewHabitScreen = ({ navigation, habits, setHabits }) => {
     </View>
   );
 };
+
+const AmountInput = ({ inputs, handleChange }) => (
+  <View>
+    <Input
+      style={styles.input}
+      placeholder="Amount"
+      onChangeText={value => handleChange('amount', value)}
+      value={inputs.amount}
+    />
+    <Input
+      style={styles.input}
+      placeholder="Of what"
+      onChangeText={value => handleChange('ofWhat', value)}
+      value={inputs.ofWhat}
+    />
+    <Select
+      placeholder="How often?"
+      selectedValue={inputs.dayWeekMonth}
+      onValueChange={itemValue => handleChange('dayWeekMonth', itemValue)}>
+        <Select.Item label="Per day" value="day" />
+        <Select.Item label="Per week" value="week" />
+        <Select.Item label="Per month" value="month" />
+    </Select>
+  </View>
+);
+
+const YesNoInput = ({ inputs, handleChange }) => (
+  <View>
+    <Input
+      style={styles.input}
+      placeholder="Amount"
+      onChangeText={value => handleChange('amount', value)}
+      value={inputs.amount}
+    />
+    <Text>
+      times
+    </Text>
+    <Select
+      placeholder="How often?"
+      selectedValue={inputs.dayWeekMonth}
+      onValueChange={itemValue => handleChange('dayWeekMonth', itemValue)}>
+        <Select.Item label="Per day" value="day" />
+        <Select.Item label="Per week" value="week" />
+        <Select.Item label="Per month" value="month" />
+    </Select>
+  </View>
+);
 
 const HabitDetailScreen = ({ navigation, route }) => {
   const { name } = route.params;
