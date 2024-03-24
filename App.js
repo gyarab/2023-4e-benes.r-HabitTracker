@@ -46,7 +46,6 @@ export default function App() {
           <Stack.Screen name="Home" options={{ title: "Home" }}>
             {({ navigation }) => (<HomeScreen navigation={navigation} zmena={zmena} setZmena={setZmena} />)}
           </Stack.Screen>
-          <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="NewHabit">
             {({ navigation }) => (<NewHabitScreen navigation={navigation} zmena={zmena} setZmena={setZmena} />)}
           </Stack.Screen>
@@ -66,21 +65,8 @@ const HomeScreen = ({ navigation, zmena, setZmena }) => {
         <Habit name={r} navigation={navigation} key={i}></Habit>
       ))}
       <StatusBar style="auto" />
-      <Button
-        title="Go to profile"
-        onPress={() => navigation.navigate("Profile")}
-      />
-      <Button title="New Habit" onPress={() => navigation.navigate("NewHabit")} />
+      <Button title="----------New Habit----------" onPress={() => navigation.navigate("NewHabit")} />
     </ScrollView>
-  );
-};
-
-const ProfileScreen = ({ navigation, route }) => {
-  return (
-    <View style={styles.container}>
-      <Text>wot u look'n at, eh?</Text>
-      <StatusBar style="auto" />
-    </View>
   );
 };
 
@@ -185,10 +171,9 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
 const Habit = ({ navigation, route, name }) => {
   return (
     <View>
-      <Text>Habit {name}</Text>
       <StatusBar style="auto" />
       <Button
-        title="Go to habit detail"
+        title={name}
         onPress={() => navigation.navigate("HabitDetail", { name: name })}
       />
     </View>
