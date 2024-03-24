@@ -1,45 +1,69 @@
 import { StatusBar } from "expo-status-bar";
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  Button,
-  TextInput,
-} from "react-native";
+import { StyleSheet, Text, View, ScrollView, Button } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { NativeBaseProvider, Select, Input } from "native-base";
-
+import { VictoryBar, VictoryChart, VictoryAxis } from 'victory';
 const Stack = createNativeStackNavigator();
 
+class Data {
+  habity = {}
+
+  add(name, amount, ofWhat, dayWeekMonth) {
+    this.habity[name] = {
+      amount: amount,
+      ofWhat: ofWhat,
+      dayWeekMonth: dayWeekMonth,
+      data: {}
+    }
+    this.save()
+  }
+  del(jmeno) {
+    delete this.habity[jmeno]
+    this.save()
+  }
+  save() {
+    localStorage.setItem("data", JSON.stringify(data.habity))
+  }
+  load() {
+    let local = localStorage.getItem("data")
+    if (local != undefined) {
+      this.habity = JSON.parse(local)
+    }
+  }
+}
+
+const data = new Data();
+
 export default function App() {
-  const [habits, setHabits] = useState([]);
+  let [zmena, setZmena] = useState(false)
+  data.load()
   return (
     <NativeBaseProvider>
       <NavigationContainer>
         <Stack.Navigator>
           <Stack.Screen name="Home" options={{ title: "Home" }}>
-            {({navigation}) => (<HomeScreen navigation={navigation} habits={habits}/>)}
+            {({ navigation }) => (<HomeScreen navigation={navigation} zmena={zmena} setZmena={setZmena} />)}
           </Stack.Screen>
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="NewHabit">
-            {({navigation}) => (<NewHabitScreen navigation={navigation} habits={habits} setHabits={setHabits}/>)}
+            {({ navigation }) => (<NewHabitScreen navigation={navigation} zmena={zmena} setZmena={setZmena} />)}
           </Stack.Screen>
-          <Stack.Screen name="HabitDetail" component={HabitDetailScreen} />
+          <Stack.Screen name="HabitDetail" >
+            {( props ) => (<HabitDetailScreen {...props} zmena={zmena} setZmena={setZmena} />)}
+          </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
     </NativeBaseProvider>
   );
 }
 
-const HomeScreen = ({ navigation, habits }) => {
+const HomeScreen = ({ navigation, zmena, setZmena }) => {
   return (
     <ScrollView>
-      <Text>Home screen</Text>
-      {habits.map((r, i) => (
-        <Habit name={r.name} navigation={navigation} key={i}></Habit>
+      {Object.keys(data.habity).map((r, i) => (
+        <Habit name={r} navigation={navigation} key={i}></Habit>
       ))}
       <StatusBar style="auto" />
       <Button
@@ -60,10 +84,9 @@ const ProfileScreen = ({ navigation, route }) => {
   );
 };
 
-const NewHabitScreen = ({ navigation, habits, setHabits }) => {
-  const [newHabitName, setNewHabitName] = React.useState("");
-  const [inputType, setInputType] = React.useState("");
+const NewHabitScreen = ({ navigation, zmena, setZmena }) => {
   const [inputs, setInputs] = React.useState({
+    name: "",
     amount: "",
     ofWhat: "",
     dayWeekMonth: ""
@@ -76,42 +99,42 @@ const NewHabitScreen = ({ navigation, habits, setHabits }) => {
     }));
   };
 
-  const renderInputComponent = () => {
-    switch (inputType) {
-      case 'amount':
-        return <AmountInput inputs={inputs} handleChange={handleChange} />;
-      case 'yn':
-        return <YesNoInput inputs={inputs} handleChange={handleChange} />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <View style={styles.container}>
       <Input
         style={styles.input}
-        onChangeText={setNewHabitName}
-        value={newHabitName}
+        onChangeText={value => handleChange('name', value)}
+        value={inputs.name}
         placeholder="Your new habit"
       />
-      <Select
-        placeholder="Choose input type"
-        selectedValue={inputType}
-        onValueChange={itemValue => setInputType(itemValue)}>
-          <Select.Item label="Amount" value="amount" />
-          <Select.Item label="Yes/No" value="yn" />
-      </Select>
       <Text>
         Set a goal!
       </Text>
-
-      {renderInputComponent()}
-
+      <Input
+        style={styles.input}
+        placeholder="Amount"
+        onChangeText={value => handleChange('amount', value)}
+        value={inputs.amount}
+      />
+      <Input
+        style={styles.input}
+        placeholder="Of what"
+        onChangeText={value => handleChange('ofWhat', value)}
+        value={inputs.ofWhat}
+      />
+      <Select
+        placeholder="How often?"
+        selectedValue={inputs.dayWeekMonth}
+        onValueChange={itemValue => handleChange('dayWeekMonth', itemValue)}>
+        <Select.Item label="Per day" value="day" />
+        <Select.Item label="Per week" value="week" />
+        <Select.Item label="Per month" value="month" />
+      </Select>
       <Button
         title="Save"
         onPress={() => {
-          setHabits([...habits, { name: newHabitName }]);
+          data.add(inputs.name, inputs.amount, inputs.ofWhat, inputs.dayWeekMonth)
+          setZmena(!zmena)
           navigation.navigate("Home");
         }}
       />
@@ -120,59 +143,41 @@ const NewHabitScreen = ({ navigation, habits, setHabits }) => {
   );
 };
 
-const AmountInput = ({ inputs, handleChange }) => (
-  <View>
-    <Input
-      style={styles.input}
-      placeholder="Amount"
-      onChangeText={value => handleChange('amount', value)}
-      value={inputs.amount}
-    />
-    <Input
-      style={styles.input}
-      placeholder="Of what"
-      onChangeText={value => handleChange('ofWhat', value)}
-      value={inputs.ofWhat}
-    />
-    <Select
-      placeholder="How often?"
-      selectedValue={inputs.dayWeekMonth}
-      onValueChange={itemValue => handleChange('dayWeekMonth', itemValue)}>
-        <Select.Item label="Per day" value="day" />
-        <Select.Item label="Per week" value="week" />
-        <Select.Item label="Per month" value="month" />
-    </Select>
-  </View>
-);
-
-const YesNoInput = ({ inputs, handleChange }) => (
-  <View>
-    <Input
-      style={styles.input}
-      placeholder="Amount"
-      onChangeText={value => handleChange('amount', value)}
-      value={inputs.amount}
-    />
-    <Text>
-      times
-    </Text>
-    <Select
-      placeholder="How often?"
-      selectedValue={inputs.dayWeekMonth}
-      onValueChange={itemValue => handleChange('dayWeekMonth', itemValue)}>
-        <Select.Item label="Per day" value="day" />
-        <Select.Item label="Per week" value="week" />
-        <Select.Item label="Per month" value="month" />
-    </Select>
-  </View>
-);
-
-const HabitDetailScreen = ({ navigation, route }) => {
-  const { name } = route.params;
+const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
+  const { name } = route.params
+  const dataChart = []
+  for (const [key, value] of Object.entries(data.habity[name].data)) {
+    dataChart.push({day: key, value: value})
+  }
+  let delka = 1
+  switch (data.habity[name].dayWeekMonth) {
+    case "day": 
+      delka = 7;
+      break;
+    case "week":
+      delka = 8;
+      break;
+    case "month":
+      delka = 6;
+      break;
+  }
   return (
     <View style={styles.container}>
-      <Text>{name}</Text>
-      <StatusBar style="auto" />
+      <VictoryChart domainPadding={20}>
+        <VictoryAxis
+          tickValues={Array.from({ length: delka }, (_, i) => i)}
+          tickFormat={(x) => (`${dataChart.length - 1 < x ? "" : dataChart[x]["day"]}`)}
+        />
+        <VictoryAxis
+          dependentAxis
+          tickFormat={(y) => (`${y} ${data.habity[name].ofWhat}`)}
+        />
+        <VictoryBar
+          data={dataChart}
+          x="quarter"
+          y="earnings"
+        />
+      </VictoryChart>
     </View>
   );
 };
