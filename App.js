@@ -4,7 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useState } from "react";
 import { NativeBaseProvider, Select, Input } from "native-base";
-import { VictoryBar, VictoryChart, VictoryAxis } from 'victory';
+import { VictoryBar, VictoryChart, VictoryLine, VictoryAxis } from 'victory';
 const Stack = createNativeStackNavigator();
 
 class Data {
@@ -121,7 +121,7 @@ const NewHabitScreen = ({ navigation, zmena, setZmena }) => {
         onPress={() => {
           data.add(inputs.name, inputs.amount, inputs.ofWhat, inputs.dayWeekMonth)
           setZmena(!zmena)
-          navigation.navigate("Home");
+          navigation.navigate("Home" , { goalAmount: inputs.amount });
         }}
       />
       <StatusBar style="auto" />
@@ -130,12 +130,13 @@ const NewHabitScreen = ({ navigation, zmena, setZmena }) => {
 };
 
 const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
-  const { name } = route.params
+  const { name, goalAmount } = route.params
   const dataChart = []
   for (const [key, value] of Object.entries(data.habity[name].data)) {
     dataChart.push({day: key, value: value})
   }
   let delka = 1
+
   switch (data.habity[name].dayWeekMonth) {
     case "day": 
       delka = 7;
@@ -144,7 +145,7 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
       delka = 8;
       break;
     case "month":
-      delka = 6;
+      delka = 12;
       break;
   }
   return (
@@ -163,18 +164,32 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
           x="quarter"
           y="earnings"
         />
+        <VictoryLine
+          data={[{ x: 0, y: goalAmount }, { x: delka - 1, y: goalAmount }]}
+          style={{ data: { stroke: "blue", strokeWidth: 2 } }}
+      />
       </VictoryChart>
+      <Button
+        title="Delete Habit"
+        onPress={() => {
+          data.del(name);
+          setZmena(!zmena)
+          navigation.navigate("Home");
+        }}
+      />
     </View>
   );
 };
 
-const Habit = ({ navigation, route, name }) => {
+const Habit = ({ navigation, name }) => {
   return (
     <View>
       <StatusBar style="auto" />
       <Button
         title={name}
-        onPress={() => navigation.navigate("HabitDetail", { name: name })}
+        onPress={() => navigation.navigate("HabitDetail", { name: name,
+          goalAmount: data.habity[name].amount
+        })}
       />
     </View>
   );
