@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, ScrollView, Button } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Button, Modal, TextInput } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useState } from "react";
@@ -130,12 +130,28 @@ const NewHabitScreen = ({ navigation, zmena, setZmena }) => {
 };
 
 const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
+  let dataChart = [];
   const { name, goalAmount } = route.params
-  const dataChart = []
   for (const [key, value] of Object.entries(data.habity[name].data)) {
     dataChart.push({day: key, value: value})
   }
+  console.log(dataChart);
   let delka = 1
+  const [inputValue, setInputValue] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleAddData = () => {
+    if (inputValue.trim() === "") return; 
+
+    const today = new Date().toISOString().split("T")[0];
+
+    data.habity[name].data[today] = (data.habity[name].data[today] || 0) + parseInt(inputValue);
+    data.save();
+    
+    setZmena(!zmena);
+
+    setIsModalVisible(false);
+  };
 
   switch (data.habity[name].dayWeekMonth) {
     case "day": 
@@ -153,7 +169,7 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
       <VictoryChart domainPadding={20}>
         <VictoryAxis
           tickValues={Array.from({ length: delka }, (_, i) => i)}
-          tickFormat={(x) => (`${dataChart.length - 1 < x ? "" : dataChart[x]["day"]}`)}
+          tickFormat={(x) => (`${x < dataChart.length ? dataChart[x]["day"] : ""}`)}
         />
         <VictoryAxis
           dependentAxis
@@ -161,14 +177,19 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
         />
         <VictoryBar
           data={dataChart}
-          x="quarter"
-          y="earnings"
+          barRatio={0.8}
+          style={{
+            data: { fill: "#c43a31" }
+          }}
+          x="day"
+          y="value"
         />
         <VictoryLine
           data={[{ x: 0, y: goalAmount }, { x: delka - 1, y: goalAmount }]}
           style={{ data: { stroke: "blue", strokeWidth: 2 } }}
-      />
+        />
       </VictoryChart>
+      <Button title="Add Data" onPress={() => setIsModalVisible(true)} />
       <Button
         title="Delete Habit"
         onPress={() => {
@@ -177,6 +198,19 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
           navigation.navigate("Home");
         }}
       />
+      <Modal visible={isModalVisible} onRequestClose={() => setIsModalVisible(false)} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text>Enter data for today:</Text>
+          <TextInput
+            style={styles.input}
+            value={inputValue}
+            onChangeText={setInputValue}
+            placeholder="Enter data..."
+          />
+          <Button title="Add" onPress={handleAddData} />
+          <Button title="Cancel" onPress={() => setIsModalVisible(false)} />
+        </View>
+      </Modal>
     </View>
   );
 };
