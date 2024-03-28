@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, ScrollView, Button, Modal, TextInput } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Button, Modal, TextInput, TouchableOpacity } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useState } from "react";
@@ -60,13 +60,20 @@ export default function App() {
 
 const HomeScreen = ({ navigation, zmena, setZmena }) => {
   return (
-    <ScrollView>
-      {Object.keys(data.habity).map((r, i) => (
-        <Habit name={r} navigation={navigation} key={i}></Habit>
-      ))}
-      <StatusBar style="auto" />
-      <Button title="----------New Habit----------" onPress={() => navigation.navigate("NewHabit")} />
-    </ScrollView>
+    <View style={styles.container}>
+      <ScrollView>
+        {Object.keys(data.habity).map((r, i) => (
+          <Habit name={r} navigation={navigation} key={i}></Habit>
+        ))}
+        <StatusBar style="auto" />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("NewHabit")}
+        >
+          <Text style={styles.buttonText}>Add Habit!</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -87,35 +94,46 @@ const NewHabitScreen = ({ navigation, zmena, setZmena }) => {
 
   return (
     <View style={styles.container}>
-      <Input
-        style={styles.input}
-        onChangeText={value => handleChange('name', value)}
-        value={inputs.name}
-        placeholder="Your new habit"
-      />
-      <Text>
-        Set a goal!
-      </Text>
-      <Input
-        style={styles.input}
-        placeholder="Amount"
-        onChangeText={value => handleChange('amount', value)}
-        value={inputs.amount}
-      />
-      <Input
-        style={styles.input}
-        placeholder="Of what"
-        onChangeText={value => handleChange('ofWhat', value)}
-        value={inputs.ofWhat}
-      />
-      <Select
-        placeholder="How often?"
-        selectedValue={inputs.dayWeekMonth}
-        onValueChange={itemValue => handleChange('dayWeekMonth', itemValue)}>
-        <Select.Item label="Per day" value="day" />
-        <Select.Item label="Per week" value="week" />
-        <Select.Item label="Per month" value="month" />
-      </Select>
+      <View style={styles.slightPadding}>
+        <Input
+          style={styles.newHabitForm}
+          onChangeText={value => handleChange('name', value)}
+          value={inputs.name}
+          placeholder="Your new habit"
+        />
+      </View>
+      <View style={styles.slightPadding}>
+        <Text style={styles.setGoalText}>
+          Set a goal!
+        </Text>
+      </View>
+      <View style={styles.slightPadding}>
+        <Input
+          style={styles.newHabitForm}
+          placeholder="Amount"
+          onChangeText={value => handleChange('amount', value)}
+          value={inputs.amount}
+        />
+      </View>
+      <View style={styles.slightPadding}>
+        <Input
+          style={styles.newHabitForm}
+          placeholder="Of what"
+          onChangeText={value => handleChange('ofWhat', value)}
+          value={inputs.ofWhat}
+        />
+      </View>
+      <View style={styles.moreSlightPadding}>
+        <Select
+          placeholder="How often?"
+          style={styles.newHabitFormSelect}
+          selectedValue={inputs.dayWeekMonth}
+          onValueChange={itemValue => handleChange('dayWeekMonth', itemValue)}>
+          <Select.Item label="Per day" value="day" />
+          <Select.Item label="Per week" value="week" />
+          <Select.Item label="Per month" value="month" />
+        </Select>
+      </View>
       <Button
         title="Save"
         onPress={() => {
@@ -174,9 +192,13 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
         />
         <VictoryAxis dependentAxis tickFormat={(y) => (`${y} ${data.habity[name].ofWhat}`)} />
         <VictoryBar
+          cornerRadius={{ 
+            topLeft: 5,
+            topRight: 5
+          }}
           data={dataChart}
           style={{
-            data: { fill: "#c43a31" }
+            data: { fill: "#8c8c8c" }
           }}
           x="day"
           y="value"
@@ -185,19 +207,19 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
         <VictoryLine
           y={() => goalAmount}
           style={{
-            data: { stroke: "red", strokeWidth: 2 },
+            data: { stroke: "green", strokeWidth: 2, strokeDasharray: "5, 2" },
           }}
         />
       </VictoryChart>
-      <Button title="Add Data" onPress={() => setIsModalVisible(true)} />
-      <Button
-        title="Delete Habit"
-        onPress={() => {
-          data.del(name);
-          setZmena(!zmena)
-          navigation.navigate("Home");
-        }}
-      />
+      <View style={styles.buttonContainer}> 
+        <TouchableOpacity style={styles.addDataButton} onPress={() => setIsModalVisible(true)}>
+          <Text style={styles.buttonText}>Add Data</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteButton} onPress={() => {data.del(name); setZmena(!zmena); navigation.navigate("Home");}}>
+          <Text style={styles.buttonText}>Delete Habit</Text>
+        </TouchableOpacity>
+      </View>
       <Modal visible={isModalVisible} onRequestClose={() => setIsModalVisible(false)} animationType="slide">
         <View style={styles.modalContainer}>
           <Text>Enter data for today:</Text>
@@ -220,12 +242,15 @@ const Habit = ({ navigation, name }) => {
   return (
     <View>
       <StatusBar style="auto" />
-      <Button
-        title={name}
+      <TouchableOpacity
+        style={styles.habit}
         onPress={() => navigation.navigate("HabitDetail", { name: name,
           goalAmount: data.habity[name].amount
         })}
-      />
+      >
+        <Text style={styles.habitButtonText}>{name}</Text>
+      </TouchableOpacity>
+      
     </View>
   );
 };
@@ -233,8 +258,87 @@ const Habit = ({ navigation, name }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  habit: {
+    width: 700, 
+    backgroundColor: "#dcdde0", 
+    borderRadius: 4, 
+    marginTop: 20, 
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  button: {
+    width: 700, 
+    backgroundColor: "#02b526", 
+    borderRadius: 4, 
+    marginTop: 20, 
+    paddingVertical: 12, 
+    paddingHorizontal: 20, 
+  },
+  addDataButton: {
+    width: 250, 
+    borderColor: "#8c8c8c", 
+    borderWidth: 2,
+    borderRadius: 100, 
+    marginTop: -100, 
+    marginRight: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  deleteButton: {
+    width: 250, 
+    borderColor: "#e30000",
+    borderWidth: 2,
+    borderRadius: 100,
+    marginTop: -100,
+    marginLeft: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  habitButtonText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#5c5c5c",
+    textAlign: "center",
+    fontFamily: "Courier New"
+  },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: "bold", 
+    color: "#ff",
+    textAlign: "center",
+    fontFamily: "Courier New"
+  },
+  setGoalText: {
+    fontSize: 25,
+    fontWeight: "bold", 
+    color: "#ff",
+    textAlign: "center",
+    fontFamily: "Courier New"
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20, 
+    marginTop: 10, 
+  },
+  newHabitForm: {
+    width: 500,
+    fontFamily: "Courier New",
+  },
+  newHabitFormSelect: {
+    width: 455, 
+    fontFamily: "Courier New",
+  },
+  slightPadding: {
+    marginTop: 10
+  },
+  moreSlightPadding: {
+    marginTop: 10,
+    marginBottom: 10
   },
 });
