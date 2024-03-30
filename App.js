@@ -170,24 +170,10 @@ const HabitDetailScreen = ({ navigation, route, zmena, setZmena }) => {
     setIsModalVisible(false);
   };
 
-  let delka = 1;
-  switch (data.habity[name].dayWeekMonth) {
-    case "day":
-      delka = 7;
-      break;
-    case "week":
-      delka = 8;
-      break;
-    case "month":
-      delka = 12;
-      break;
-  }
-
   return (
     <View style={styles.container}>
-      <VictoryChart domainPadding={20}>
+      <VictoryChart domainPadding={20} animate={{ duration: 750 }}>
         <VictoryAxis
-          tickValues={Array.from({ length: delka }, (_, i) => i)}
           tickFormat={(x) => (x < dataChart.length ? dataChart[x]["day"] : "")}
         />
         <VictoryAxis dependentAxis tickFormat={(y) => (`${y} ${data.habity[name].ofWhat}`)} />
