@@ -58,7 +58,7 @@ export default function App() {
   );
 }
 
-const HomeScreen = ({ navigation, zmena, setZmena }) => {
+const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -335,3 +335,5 @@ const styles = StyleSheet.create({
     marginBottom: -85
   }
 });
+
+//hele jako, je třicátýho. žádný fóry tady. Ty nezbedo.
